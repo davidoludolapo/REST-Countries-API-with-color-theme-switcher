@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Article from "./Article";
 
 export default function Countries() {
   const [countries, setCountries] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [toggle, setToggle] = useState(false);
+  const [message, setMessage] = useState("");
   const regions = [
     {
       name: "Europe",
@@ -45,6 +48,10 @@ export default function Countries() {
         `https://restcountries.com/v3.1/name/${searchText}`
       );
       const data = await res.json();
+      if (data.status === 404) {
+        return setToggle(true), setMessage("Your search yielded no result");
+      }
+      setToggle(false);
       setCountries(data);
     } catch (error) {
       console.error(error);
@@ -71,6 +78,10 @@ export default function Countries() {
   function handleFilter(e) {
     e.preventDefault();
     filterByRegion();
+  }
+
+  const handleReload = () => {
+    window.location.reload() 
   }
 
   return (
@@ -116,11 +127,28 @@ export default function Countries() {
               </select>
             </form>
           </div>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {countries.map((country) => (
-              <Article key={country.name.common} {...country} />
-            ))}
-          </div>
+          {!toggle ? (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {countries.map((country) => (
+                <Article key={country.name.common} {...country} />
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between px-8 py-8 max-w-5xl  border-x-4 shadow rounded">
+                <div className=" text-gray-200 text-2xl">{message}</div>
+
+                <div >
+                  <div onClick={handleReload}
+                   
+                    className=" inline-block p-0 bg-white lg:py-2 px-8 text-gray-700 hover:bg-gray-200 transition-all duration-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400"
+                  >
+                    &larr; Go Back
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </section>
       )}
     </>
